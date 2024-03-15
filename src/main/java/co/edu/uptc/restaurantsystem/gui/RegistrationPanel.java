@@ -1,6 +1,7 @@
 package co.edu.uptc.restaurantsystem.gui;
 
 import co.edu.uptc.restaurantsystem.model.User;
+import co.edu.uptc.restaurantsystem.persistence.Database;
 import javafx.animation.FadeTransition;
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;
@@ -16,6 +17,8 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import javafx.util.Duration;
+
+import java.io.IOException;
 
 public class RegistrationPanel extends GridPane {
     private TextField nameInput;
@@ -119,7 +122,7 @@ public class RegistrationPanel extends GridPane {
             return;
         }
 
-        if (!User.isCodeValid(code)){
+        if (!User.isCodeValid(code)) {
             showAlert(Alert.AlertType.ERROR, "Error", "Código no válido.");
             return;
         }
@@ -143,9 +146,14 @@ public class RegistrationPanel extends GridPane {
         }
 
         User user = new User(names, surnames, code, password);
-        showAlert(Alert.AlertType.CONFIRMATION, "Éxito", "Registro completado.");
-        Stage stage = (Stage) this.getScene().getWindow();
-        stage.close();
+        if (Database.getDatabase().addRegister(user)) {
+            showAlert(Alert.AlertType.CONFIRMATION, "Éxito", "Registro completado.");
+            Stage stage = (Stage) this.getScene().getWindow();
+            stage.close();
+        } else {
+            showAlert(Alert.AlertType.ERROR, "Error", "Se ha producido un error interno crítico.\nInténtelo de nuevo más tarde.");
+            System.exit(0);
+        }
     }
 
     private void showAlert(Alert.AlertType alertType, String title, String message) {

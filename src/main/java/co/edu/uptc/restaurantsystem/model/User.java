@@ -1,6 +1,12 @@
 package co.edu.uptc.restaurantsystem.model;
 
-import com.google.gson.*;
+import com.google.gson.JsonDeserializationContext;
+import com.google.gson.JsonDeserializer;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
+import com.google.gson.JsonSerializationContext;
+import com.google.gson.JsonSerializer;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.lang.reflect.Type;
@@ -21,7 +27,7 @@ public class User {
     private String encryptedPassword;
     private int balance;
 
-    public User(String names, String surmanes, String code, String email, String role, String encryptedPassword, int balance) {
+    private User(String names, String surmanes, String code, String email, String role, String encryptedPassword, int balance) {
         this.names = names;
         this.surmanes = surmanes;
         this.code = code;
@@ -32,8 +38,8 @@ public class User {
     }
 
     public User(String names, String surmanes, String code, String role, String password) {
-        this.names = names;
-        this.surmanes = surmanes;
+        this.names = names.toUpperCase();
+        this.surmanes = surmanes.toUpperCase();
         this.code = code;
         this.role = role;
         encryptPassword(password);
@@ -101,7 +107,7 @@ public class User {
     }
 
     private void generateEmail() {
-
+        email = "email";
     }
 
     public static boolean isPasswordValid(String password) {
