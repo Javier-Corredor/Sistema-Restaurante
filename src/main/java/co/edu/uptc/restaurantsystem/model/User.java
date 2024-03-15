@@ -18,6 +18,8 @@ public class User {
     public static final String ROLE_STUDENT = "STUDENT";
     public static final String ROLE_MODERATOR = "MODERATOR";
 
+    private static final String EMAIL_DOMAIN = "@uptc.edu.co";
+
     BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
     private String names;
     private String surmanes;
@@ -37,17 +39,17 @@ public class User {
         this.balance = balance;
     }
 
-    public User(String names, String surmanes, String code, String role, String password) {
+    public User(String names, String surmanes, String code, String role, String email, String password) {
         this.names = names.toUpperCase();
         this.surmanes = surmanes.toUpperCase();
+        this.email = email;
         this.code = code;
         this.role = role;
         encryptPassword(password);
-        generateEmail();
     }
 
-    public User(String names, String surmanes, String code, String password) {
-        this(names, surmanes, code, ROLE_STUDENT, password);
+    public User(String names, String surmanes, String code, String email, String password) {
+        this(names, surmanes, code, ROLE_STUDENT, email, password);
     }
 
     public String getNames() {
@@ -106,10 +108,6 @@ public class User {
         return encoder.matches(password, this.encryptedPassword);
     }
 
-    private void generateEmail() {
-        email = "email";
-    }
-
     public static boolean isPasswordValid(String password) {
         String regex = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=!])(?=\\S+$).{8,}$";
         return password.matches(regex);
@@ -132,6 +130,10 @@ public class User {
         int currentMonth = now.getMonthValue();
         if (currentYear == codeYear && currentMonth <= 6) return codeSemester == 1;
         return codeSemester == 1 || codeSemester == 2;
+    }
+
+    public static String getEmailDomain() {
+        return EMAIL_DOMAIN;
     }
 
     public static class UserAdapter implements JsonSerializer<User>, JsonDeserializer<User> {

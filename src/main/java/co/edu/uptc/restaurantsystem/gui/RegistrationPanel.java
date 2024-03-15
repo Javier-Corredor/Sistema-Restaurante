@@ -18,8 +18,6 @@ import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
-import java.io.IOException;
-
 public class RegistrationPanel extends GridPane {
     private TextField nameInput;
     private TextField lastNameInput;
@@ -60,21 +58,21 @@ public class RegistrationPanel extends GridPane {
         nameInput = new TextField();
         nameInput.setPromptText("Ingrese sus nombres");
         nameInput.setPrefSize(200, 30);
-        VBox nameBox = newVBox(1, 0, namesLabel, nameInput);
+        VBox nameBox = createWraperVBix(1, 0, namesLabel, nameInput);
 
         Label surnamesLabel = new Label("Apellidos:");
         surnamesLabel.setTextFill(Color.WHITE);
         lastNameInput = new TextField();
         lastNameInput.setPromptText("Ingrese sus apellidos");
         lastNameInput.setPrefSize(200, 30);
-        VBox lastNameBox = newVBox(1, 1, surnamesLabel, lastNameInput);
+        VBox lastNameBox = createWraperVBix(1, 1, surnamesLabel, lastNameInput);
 
         Label codeLabel = new Label("Código:");
         codeLabel.setTextFill(Color.WHITE);
         codeInput = new TextField();
         codeInput.setPromptText("Ingrese su código");
         codeInput.setPrefSize(200, 30);
-        VBox codeBox = newVBox(2, 0, codeLabel, codeInput);
+        VBox codeBox = createWraperVBix(2, 0, codeLabel, codeInput);
 
         Label securityLabel = new Label("Seguridad");
         securityLabel.setTextFill(Color.WHITE);
@@ -85,16 +83,16 @@ public class RegistrationPanel extends GridPane {
         Label passwordLabel = new Label("Contraseña:");
         passwordLabel.setTextFill(Color.WHITE);
         passwordInput = new PasswordField();
-        passwordInput.setPromptText("Ingrese su contraseña:");
+        passwordInput.setPromptText("Ingrese su contraseña");
         passwordInput.setPrefSize(200, 30);
-        VBox passwordBox = newVBox(4, 0, passwordLabel, passwordInput);
+        VBox passwordBox = createWraperVBix(4, 0, passwordLabel, passwordInput);
 
         Label confirmPasswordLabel = new Label("Confirmar contraseña:");
         confirmPasswordLabel.setTextFill(Color.WHITE);
         confirmPasswordInput = new PasswordField();
         confirmPasswordInput.setPromptText("Ingrese de nuevo su contraseña");
         confirmPasswordInput.setPrefSize(200, 30);
-        VBox confirmPasswordBox = newVBox(4, 1, confirmPasswordLabel, confirmPasswordInput);
+        VBox confirmPasswordBox = createWraperVBix(4, 1, confirmPasswordLabel, confirmPasswordInput);
 
         Button registerButton = new Button("Registrarse");
         registerButton.setStyle("-fx-background-color: #2196F3; -fx-text-fill: white;");
@@ -110,15 +108,21 @@ public class RegistrationPanel extends GridPane {
     }
 
     private void registerButtonAction() {
-        String names = nameInput.getText();
-        String surnames = lastNameInput.getText();
-        String code = codeInput.getText();
-        String password = passwordInput.getText();
-        String confirmPassword = confirmPasswordInput.getText();
+        String names = nameInput.getText().trim();
+        String surnames = lastNameInput.getText().trim();
+        String code = codeInput.getText().trim();
+        String password = passwordInput.getText().trim();
+        String confirmPassword = confirmPasswordInput.getText().trim();
 
         // Validar que los campos no estén vacíos
-        if (names.isBlank() || surnames.isBlank() || code.isBlank() || password.isBlank() || confirmPassword.isEmpty()) {
+        if (names.isEmpty() || surnames.isEmpty() || code.isEmpty() || password.isEmpty() || confirmPassword.isEmpty()) {
             showAlert(Alert.AlertType.ERROR, "Error", "Debe completar todos los campos.");
+            return;
+        }
+
+        String regex = "^[a-zA-Z]+(?:\\s[a-zA-Z]+)*$";
+        if (!names.matches(regex) || !surnames.matches(regex)) {
+            showAlert(Alert.AlertType.ERROR, "Error", "Nombre no válido.");
             return;
         }
 
@@ -141,20 +145,28 @@ public class RegistrationPanel extends GridPane {
 
         // Validar que las contraseñas coincidan
         if (!password.equals(confirmPassword)) {
-            showAlert(Alert.AlertType.ERROR, "Error", "Las contraseñas no coinciden. ");
+            showAlert(Alert.AlertType.ERROR, "Error", "Las contraseñas no coinciden.");
             return;
         }
 
-        User user = new User(names, surnames, code, password);
-        if (Database.getDatabase().addRegister(user)) {
-            showAlert(Alert.AlertType.CONFIRMATION, "Éxito", "Registro completado.");
-            Stage stage = (Stage) this.getScene().getWindow();
-            stage.close();
-        } else {
-            showAlert(Alert.AlertType.ERROR, "Error", "Se ha producido un error interno crítico.\nInténtelo de nuevo más tarde.");
-            System.exit(0);
+        Database database = Database.getDatabase();
+        if (database.searchByCode(code) != null) {
+            showAlert(Alert.AlertType.ERROR, "Error", "El código ingresado ya está registrado.");
+            return;
         }
+
+
+        String firstName = names.split(" ")[0].toLowerCase();
+        String lastName = surnames.split(" ")[0].toLowerCase();
+
+        String email = database.generateUniqueEmail(firstName, lastName);
+        User user = new User(names, surnames, code, email, password);
+        database.addRegister(user);
+        showAlert(Alert.AlertType.CONFIRMATION, "Éxito", "Registro completado.");
+        Stage stage = (Stage) this.getScene().getWindow();
+        stage.close();
     }
+
 
     private void showAlert(Alert.AlertType alertType, String title, String message) {
         Alert alert = new Alert(alertType);
@@ -164,7 +176,7 @@ public class RegistrationPanel extends GridPane {
         alert.showAndWait();
     }
 
-    private static VBox newVBox(int row, int column, Label label, TextField textField) {
+    private static VBox createWraperVBix(int row, int column, Label label, TextField textField) {
         VBox vBox = new VBox(2, label, textField);
         GridPane.setConstraints(vBox, column, row);
         return vBox;

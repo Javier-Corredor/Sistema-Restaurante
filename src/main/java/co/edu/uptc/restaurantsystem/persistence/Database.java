@@ -22,41 +22,83 @@ public class Database {
     private static final String FILE_PATH;
 
     static {
-        DATABASE = new Database();
         URL url = Objects.requireNonNull(Database.class.getResource("/database/users.json"));
         FILE_PATH = url.getPath();
+        DATABASE = new Database();
     }
 
     private ArrayList<User> users;
-    private Gson gson;
+    private Gson gson = new GsonBuilder()
+            .setPrettyPrinting()
+            .registerTypeAdapter(User.class, new User.UserAdapter())
+            .create();
 
     private Database() {
-        gson = new GsonBuilder()
-                .setPrettyPrinting()
-                .registerTypeAdapter(User.class, new User.UserAdapter())
-                .create();
+        load();
     }
 
-    private void load() throws IOException {
+    private void load() {
         try (BufferedReader bf = new BufferedReader(new FileReader(FILE_PATH))) {
             Type type = new TypeToken<ArrayList<User>>() {
             }.getType();
             users = gson.fromJson(bf, type);
+        } catch (IOException ignored) {
+
         }
     }
 
-    private void save() throws IOException {
+    public void save() {
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(FILE_PATH))) {
             bw.write(gson.toJson(users));
             bw.flush();
-            users = null;
+        } catch (IOException ignored) {
+
         }
     }
 
-    public void addRegister(User user) throws IOException {
-        load();
+    public void addRegister(User user) {
         users.add(user);
-        save();
+    }
+
+    public boolean verifyCredentials(String emailOrCode, String password) {
+        User found = search(emailOrCode);
+        return found != null && found.checkPassword(password);
+    }
+
+    private User search(String emailOrCode) {
+        for (User user : users) {
+            if (user.getCode().equals(emailOrCode) || user.getEmail().equals(emailOrCode)) {
+                return user;
+            }
+        }
+        return null;
+    }
+
+    public String generateUniqueEmail(String name, String lastName) {
+        String domain = User.getEmailDomain();
+        String email = String.format("%s%s%s", name, lastName, domain);
+        int i = 0;
+        while (searchByEmail(email) != null) {
+            i++;
+            email = String.format("%s.%s%02d%s", name, lastName, i, domain);
+        }
+        return email;
+    }
+
+    public User searchByEmail(String email) {
+        for (User user : users) {
+            if (user.getEmail().equals(email)) return user;
+        }
+
+        return null;
+    }
+
+    public User searchByCode(String code) {
+        for (User user : users) {
+            if (user.getCode().equals(code)) return user;
+        }
+
+        return null;
     }
 
     public static Database getDatabase() { // Acceso global a la única instancia de la clase

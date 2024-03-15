@@ -1,2 +1,4 @@
-package co.edu.uptc.restaurantsystem.gui;public class StudentPanel {
+package co.edu.uptc.restaurantsystem.gui;
+
+public class StudentPanel {
 }
