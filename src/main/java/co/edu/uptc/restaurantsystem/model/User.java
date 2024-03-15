@@ -1,10 +1,11 @@
 package co.edu.uptc.restaurantsystem.model;
 
+import com.google.gson.*;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
+import java.lang.reflect.Type;
 import java.time.LocalDate;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+
 
 public class User {
     public static final String ROLE_ADMIN = "ADMINISTRATOR";
@@ -16,17 +17,31 @@ public class User {
     private String surmanes;
     private String code;
     private String email;
-    private String rol;
-    private String password;
+    private String role;
+    private String encryptedPassword;
     private int balance;
 
-    public User(String names, String surmanes, String code, String email, String rol, String password) {
+    public User(String names, String surmanes, String code, String email, String role, String encryptedPassword, int balance) {
         this.names = names;
         this.surmanes = surmanes;
         this.code = code;
         this.email = email;
-        this.rol = rol;
-        setPassword(password);
+        this.role = role;
+        this.encryptedPassword = encryptedPassword;
+        this.balance = balance;
+    }
+
+    public User(String names, String surmanes, String code, String role, String password) {
+        this.names = names;
+        this.surmanes = surmanes;
+        this.code = code;
+        this.role = role;
+        encryptPassword(password);
+        generateEmail();
+    }
+
+    public User(String names, String surmanes, String code, String password) {
+        this(names, surmanes, code, ROLE_STUDENT, password);
     }
 
     public String getNames() {
@@ -61,16 +76,16 @@ public class User {
         this.email = email;
     }
 
-    public String getRol() {
-        return rol;
+    public String getRole() {
+        return role;
     }
 
-    public void setRol(String rol) {
-        this.rol = rol;
+    public void setRole(String role) {
+        this.role = role;
     }
 
-    public void setPassword(String password) {
-        this.password = encoder.encode(password);
+    public void encryptPassword(String encryptedPassword) {
+        this.encryptedPassword = encoder.encode(encryptedPassword);
     }
 
     public int getBalance() {
@@ -82,7 +97,11 @@ public class User {
     }
 
     public boolean checkPassword(String password) {
-        return encoder.matches(password, this.password);
+        return encoder.matches(password, this.encryptedPassword);
+    }
+
+    private void generateEmail() {
+
     }
 
     public static boolean isPasswordValid(String password) {
@@ -107,5 +126,35 @@ public class User {
         int currentMonth = now.getMonthValue();
         if (currentYear == codeYear && currentMonth <= 6) return codeSemester == 1;
         return codeSemester == 1 || codeSemester == 2;
+    }
+
+    public static class UserAdapter implements JsonSerializer<User>, JsonDeserializer<User> {
+
+        @Override
+        public User deserialize(JsonElement jsonElement, Type type,
+                                JsonDeserializationContext jsonDeserializationContext) throws JsonParseException {
+            JsonObject jsonObject = jsonElement.getAsJsonObject();
+            String names = jsonObject.get("names").getAsString();
+            String surnames = jsonObject.get("surnames").getAsString();
+            String code = jsonObject.get("code").getAsString();
+            String email = jsonObject.get("email").getAsString();
+            String role = jsonObject.get("role").getAsString();
+            String encryptedPassword = jsonObject.get("password").getAsString();
+            int balance = jsonObject.get("balance").getAsInt();
+            return new User(names, surnames, code, email, role, encryptedPassword, balance);
+        }
+
+        @Override
+        public JsonElement serialize(User user, Type type, JsonSerializationContext jsonSerializationContext) {
+            JsonObject jsonObject = new JsonObject();
+            jsonObject.addProperty("names", user.names);
+            jsonObject.addProperty("surnames", user.surmanes);
+            jsonObject.addProperty("code", user.code);
+            jsonObject.addProperty("email", user.email);
+            jsonObject.addProperty("balance", user.balance);
+            jsonObject.addProperty("role", user.role);
+            jsonObject.addProperty("password", user.encryptedPassword);
+            return jsonObject;
+        }
     }
 }

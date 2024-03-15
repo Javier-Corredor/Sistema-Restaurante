@@ -52,24 +52,24 @@ public class RegistrationPanel extends GridPane {
         personalInformationLabel.setFont(Font.font(14));
         GridPane.setConstraints(personalInformationLabel, 0, 0);
 
-        Label nameLabel = new Label("Name:");
-        nameLabel.setTextFill(Color.WHITE);
+        Label namesLabel = new Label("Nombres:");
+        namesLabel.setTextFill(Color.WHITE);
         nameInput = new TextField();
-        nameInput.setPromptText("Enter your name");
+        nameInput.setPromptText("Ingrese sus nombres");
         nameInput.setPrefSize(200, 30);
-        VBox nameBox = newVBox(1, 0, nameLabel, nameInput);
+        VBox nameBox = newVBox(1, 0, namesLabel, nameInput);
 
-        Label lastNameLabel = new Label("Last Name:");
-        lastNameLabel.setTextFill(Color.WHITE);
+        Label surnamesLabel = new Label("Apellidos:");
+        surnamesLabel.setTextFill(Color.WHITE);
         lastNameInput = new TextField();
-        lastNameInput.setPromptText("Enter your last name");
+        lastNameInput.setPromptText("Ingrese sus apellidos");
         lastNameInput.setPrefSize(200, 30);
-        VBox lastNameBox = newVBox(1, 1, lastNameLabel, lastNameInput);
+        VBox lastNameBox = newVBox(1, 1, surnamesLabel, lastNameInput);
 
-        Label codeLabel = new Label("Code:");
+        Label codeLabel = new Label("Código:");
         codeLabel.setTextFill(Color.WHITE);
         codeInput = new TextField();
-        codeInput.setPromptText("Enter your code");
+        codeInput.setPromptText("Ingrese su código");
         codeInput.setPrefSize(200, 30);
         VBox codeBox = newVBox(2, 0, codeLabel, codeInput);
 
@@ -79,21 +79,21 @@ public class RegistrationPanel extends GridPane {
         GridPane.setConstraints(securityLabel, 0, 3);
         GridPane.setMargin(securityLabel, new Insets(20, 0, 0, 0));
 
-        Label passwordLabel = new Label("Password:");
+        Label passwordLabel = new Label("Contraseña:");
         passwordLabel.setTextFill(Color.WHITE);
         passwordInput = new PasswordField();
-        passwordInput.setPromptText("Enter your password");
+        passwordInput.setPromptText("Ingrese su contraseña:");
         passwordInput.setPrefSize(200, 30);
         VBox passwordBox = newVBox(4, 0, passwordLabel, passwordInput);
 
-        Label confirmPasswordLabel = new Label("Confirm Password:");
+        Label confirmPasswordLabel = new Label("Confirmar contraseña:");
         confirmPasswordLabel.setTextFill(Color.WHITE);
         confirmPasswordInput = new PasswordField();
-        confirmPasswordInput.setPromptText("Confirm your password");
+        confirmPasswordInput.setPromptText("Ingrese de nuevo su contraseña");
         confirmPasswordInput.setPrefSize(200, 30);
         VBox confirmPasswordBox = newVBox(4, 1, confirmPasswordLabel, confirmPasswordInput);
 
-        Button registerButton = new Button("Register");
+        Button registerButton = new Button("Registrarse");
         registerButton.setStyle("-fx-background-color: #2196F3; -fx-text-fill: white;");
         registerButton.setMinWidth(180);
         GridPane.setConstraints(registerButton, 0, 5);
@@ -107,14 +107,14 @@ public class RegistrationPanel extends GridPane {
     }
 
     private void registerButtonAction() {
-        String name = nameInput.getText();
-        String lastName = lastNameInput.getText();
+        String names = nameInput.getText();
+        String surnames = lastNameInput.getText();
         String code = codeInput.getText();
         String password = passwordInput.getText();
         String confirmPassword = confirmPasswordInput.getText();
 
         // Validar que los campos no estén vacíos
-        if (name.isBlank() || lastName.isBlank() || code.isBlank() || password.isBlank() || confirmPassword.isEmpty()) {
+        if (names.isBlank() || surnames.isBlank() || code.isBlank() || password.isBlank() || confirmPassword.isEmpty()) {
             showAlert(Alert.AlertType.ERROR, "Error", "Debe completar todos los campos.");
             return;
         }
@@ -142,6 +142,7 @@ public class RegistrationPanel extends GridPane {
             return;
         }
 
+        User user = new User(names, surnames, code, password);
         showAlert(Alert.AlertType.CONFIRMATION, "Éxito", "Registro completado.");
         Stage stage = (Stage) this.getScene().getWindow();
         stage.close();
