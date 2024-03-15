@@ -11,15 +11,21 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.Type;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Objects;
 
 public class Database {
 
     // Patron de diseño singleton usado (Una sola instancia de la clase)
-    private static final Database DATABASE = new Database();
+    private static final Database DATABASE;
+    private static final String FILE_PATH;
 
-    private static final String FILE_PATH = Objects.requireNonNull(Database.class.getResource("/database/users.json")).getPath();
+    static {
+        DATABASE = new Database();
+        URL url = Objects.requireNonNull(Database.class.getResource("/database/users.json"));
+        FILE_PATH = url.getPath();
+    }
 
     private ArrayList<User> users;
     private Gson gson;
@@ -31,31 +37,26 @@ public class Database {
                 .create();
     }
 
-    private boolean save() {
-        try (BufferedWriter bw = new BufferedWriter(new FileWriter(FILE_PATH))) {
-            bw.write(gson.toJson(users));
-            bw.flush();
-        } catch (IOException e) {
-            return false;
-        }
-        return true;
-    }
-
-    private boolean load() {
+    private void load() throws IOException {
         try (BufferedReader bf = new BufferedReader(new FileReader(FILE_PATH))) {
             Type type = new TypeToken<ArrayList<User>>() {
             }.getType();
             users = gson.fromJson(bf, type);
-        } catch (IOException e) {
-            return false;
         }
-        return true;
     }
 
-    public boolean addRegister(User user) {
-        if (!load()) return false;
+    private void save() throws IOException {
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(FILE_PATH))) {
+            bw.write(gson.toJson(users));
+            bw.flush();
+            users = null;
+        }
+    }
+
+    public void addRegister(User user) throws IOException {
+        load();
         users.add(user);
-        return save();
+        save();
     }
 
     public static Database getDatabase() { // Acceso global a la única instancia de la clase
