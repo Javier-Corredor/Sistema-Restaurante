@@ -3,6 +3,7 @@ module co.edu.uptc.gui.restaurant_system {
     requires javafx.fxml;
 
     requires org.controlsfx.controls;
+    requires spring.security.crypto;
 
     opens co.edu.uptc.restaurantsystem.gui to javafx.fxml;
     exports co.edu.uptc.restaurantsystem.gui;
